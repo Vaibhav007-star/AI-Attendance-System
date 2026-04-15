@@ -443,8 +443,14 @@ class AttendanceApp(tk.Tk):
         if not self.cap.isOpened():
             messagebox.showerror("Error", "Cannot open webcam.")
             return
-        self.running = True
-        self._next_frame()
+        self.running       = True
+        self._frame_rgb    = None
+        self._live_txt     = ""
+        self._need_refresh = False
+        # Heavy OpenCV work runs in a background thread
+        threading.Thread(target=self._camera_worker, daemon=True).start()
+        # GUI updates run on the main thread via after()
+        self._display_frame()
 
     def _stop_camera(self):
         self.running = False
@@ -454,67 +460,80 @@ class AttendanceApp(tk.Tk):
         self.cam_label.config(image="", text="Camera Off")
         self.live_lbl.config(text="")
 
-    def _next_frame(self):
-        if not self.running or self.cap is None:
-            return
-        ret, frame = self.cap.read()
-        if not ret:
-            self.after(30, self._next_frame)
-            return
-
-        date     = datetime.now().strftime("%Y-%m-%d")
-        time_now = datetime.now().strftime("%H:%M:%S")
-        gray     = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces    = face_cascade.detectMultiScale(gray, 1.3, 5)
-        live_txt = ""
-
-        for (x, y, w, h) in faces:
-            face_bgr  = frame[y:y+h, x:x+w]
-            face_gray = gray[y:y+h, x:x+w]
-            is_live, reason = check_liveness(face_bgr, face_gray)
-            live_txt = "✅ LIVE" if is_live else f"❌ {reason}"
-
-            if not is_live:
-                cv2.rectangle(frame, (x,y),(x+w,y+h),(0,60,220),3)
-                cv2.putText(frame, reason, (x,y-8),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.65,(0,60,220),2)
+    # ── Background thread: reads & processes every frame ─────────────────
+    def _camera_worker(self):
+        while self.running and self.cap is not None:
+            ret, frame = self.cap.read()
+            if not ret:
                 continue
 
-            name_reg, conf = recognize_face(face_gray)
-            if name_reg != "Unknown":
-                parts  = name_reg.split("_", 1)
-                name   = parts[0]
-                reg_no = parts[1] if len(parts) > 1 else ""
-                col    = (0,220,60)
-                if name_reg not in self.marked:
-                    self.marked.add(name_reg)
-                    if mark_attendance(name, reg_no):
-                        self.after(0, self._refresh_live_table)
-            else:
-                name, reg_no, col = "Unknown", "", (0,60,220)
+            date     = datetime.now().strftime("%Y-%m-%d")
+            time_now = datetime.now().strftime("%H:%M:%S")
+            gray     = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces    = face_cascade.detectMultiScale(gray, 1.3, 5)
+            live_txt = ""
 
-            cv2.rectangle(frame, (x,y),(x+w,y+h), col, 2)
-            cv2.putText(frame,
-                        f"{name} {conf}%" if name != "Unknown" else "Unknown",
-                        (x,y-8), cv2.FONT_HERSHEY_SIMPLEX, 0.7, col, 2)
+            for (x, y, w, h) in faces:
+                face_bgr  = frame[y:y+h, x:x+w]
+                face_gray = gray[y:y+h, x:x+w]
+                is_live, reason = check_liveness(face_bgr, face_gray)
+                live_txt = "✅ LIVE" if is_live else f"❌ {reason}"
 
-        cv2.putText(frame, f"{date} {time_now}", (8,24),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180,180,180), 1)
-        cv2.putText(frame, f"Marked: {len(self.marked)}", (8,48),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0,220,255), 2)
+                if not is_live:
+                    cv2.rectangle(frame, (x,y),(x+w,y+h),(0,60,220),3)
+                    cv2.putText(frame, reason, (x,y-8),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.65,(0,60,220),2)
+                    continue
 
-        # Always resize to exact CAM_W x CAM_H — no dynamic sizing
-        pil   = Image.fromarray(
-                    cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                ).resize((CAM_W, CAM_H), Image.LANCZOS)
-        imgtk = ImageTk.PhotoImage(image=pil)
-        self.cam_label.imgtk = imgtk
-        self.cam_label.config(image=imgtk, text="")
+                name_reg, conf = recognize_face(face_gray)
+                if name_reg != "Unknown":
+                    parts  = name_reg.split("_", 1)
+                    name   = parts[0]
+                    reg_no = parts[1] if len(parts) > 1 else ""
+                    col    = (0,220,60)
+                    if name_reg not in self.marked:
+                        self.marked.add(name_reg)
+                        if mark_attendance(name, reg_no):
+                            self._need_refresh = True
+                else:
+                    name, reg_no, col = "Unknown", "", (0,60,220)
 
-        fg = "#3fb950" if live_txt == "✅ LIVE" else (
-             RED if live_txt else "")
+                cv2.rectangle(frame, (x,y),(x+w,y+h), col, 2)
+                cv2.putText(frame,
+                            f"{name} {conf}%" if name != "Unknown" else "Unknown",
+                            (x,y-8), cv2.FONT_HERSHEY_SIMPLEX, 0.7, col, 2)
+
+            cv2.putText(frame, f"{date} {time_now}", (8,24),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180,180,180), 1)
+            cv2.putText(frame, f"Marked: {len(self.marked)}", (8,48),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0,220,255), 2)
+
+            # Store processed RGB frame for the display thread to pick up
+            self._frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            self._live_txt  = live_txt
+
+    # ── Main thread: only converts and shows the latest frame ────────────
+    def _display_frame(self):
+        if not self.running:
+            return
+
+        if self._frame_rgb is not None:
+            pil   = Image.fromarray(self._frame_rgb).resize(
+                        (CAM_W, CAM_H), Image.LANCZOS)
+            imgtk = ImageTk.PhotoImage(image=pil)
+            self.cam_label.imgtk = imgtk
+            self.cam_label.config(image=imgtk, text="")
+
+        live_txt = self._live_txt
+        fg = "#3fb950" if live_txt == "✅ LIVE" else (RED if live_txt else BG)
         self.live_lbl.config(text=live_txt, fg=fg)
-        self.after(30, self._next_frame)
+
+        if self._need_refresh:
+            self._need_refresh = False
+            self._refresh_live_table()
+
+        # 40 ms display refresh (25 fps) — keeps main thread free
+        self.after(40, self._display_frame)
 
     def _screenshot(self):
         if self.cap and self.running:
@@ -561,19 +580,25 @@ class AttendanceApp(tk.Tk):
             w.destroy()
         for r in self.stats_tree.get_children():
             self.stats_tree.delete(r)
+
+        # Load attendance CSV (may be empty on first run)
         try:
             df = pd.read_csv(ATTENDANCE_FILE)
         except:
-            return
-        if df.empty:
-            return
-        total_days = df["Date"].nunique()
+            df = pd.DataFrame(columns=["Name","RegNo","Date","Time"])
+
+        total_days = df["Date"].nunique() if not df.empty else 0
         today      = datetime.now().strftime("%Y-%m-%d")
+
+        # All registered students from dataset/ — used as the master list
+        all_students = self._all_students()
+        total_registered = len(all_students)
+
         for title, val, col in [
-            ("📅 Total Days", str(total_days),              BLUE),
-            ("👥 Students",   str(df["Name"].nunique()),    ACCENT),
-            ("✅ Today",      str(len(df[df["Date"]==today])), "#e3b341"),
-            ("📝 Records",    str(len(df)),                 "#6e7681"),
+            ("📅 Total Days",    str(total_days),                         BLUE),
+            ("👥 Registered",    str(total_registered),                   ACCENT),
+            ("✅ Today",             str(len(df[df["Date"]==today])) if not df.empty else "0", "#e3b341"),
+            ("📝 Records",       str(len(df)),                            "#6e7681"),
         ]:
             c = tk.Frame(self.cards_frame, bg=col, padx=18, pady=12)
             c.pack(side="left", padx=8, pady=4)
@@ -581,13 +606,24 @@ class AttendanceApp(tk.Tk):
                      bg=col, fg="white").pack()
             tk.Label(c, text=title, font=("Courier New",9),
                      bg=col, fg="white").pack()
-        for name, grp in df.groupby("Name"):
-            days = grp["Date"].nunique()
-            pct  = round(days/total_days*100, 1) if total_days else 0
+
+        # Show ALL registered students — even those with zero attendance
+        for s in sorted(all_students, key=lambda x: x["Name"]):
+            name   = s["Name"]
+            reg_no = s["RegNo"]
+            if not df.empty and name in df["Name"].values:
+                grp  = df[df["Name"] == name]
+                days = grp["Date"].nunique()
+                last = grp["Date"].max()
+            else:
+                days = 0
+                last = "Never"
+            pct = round(days / total_days * 100, 1) if total_days > 0 else 0.0
+            tag = "low" if pct < 75 else "ok"
             self.stats_tree.insert("", "end",
-                values=(name, grp["RegNo"].iloc[0],
-                        days, grp["Date"].max(), f"{pct}%"),
-                tags=("low" if pct < 75 else "ok",))
+                values=(name, reg_no, days, last, f"{pct}%"),
+                tags=(tag,))
+
         self.stats_tree.tag_configure("low", foreground=RED)
         self.stats_tree.tag_configure("ok",  foreground="#3fb950")
 
