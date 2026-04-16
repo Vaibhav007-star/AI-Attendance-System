@@ -36,7 +36,7 @@ def play_beep():
 # ─────────────────────────────────────────────
 DATASET_PATH      = "dataset"
 ATTENDANCE_FILE   = "attendance.csv"
-CONFIDENCE_THRESH = 75
+CONFIDENCE_THRESH = 60
 CAM_W, CAM_H      = 640, 400   # fixed camera display pixel size
 
 os.makedirs(DATASET_PATH, exist_ok=True)
@@ -91,7 +91,7 @@ def recognize_face(gray_face):
         return "Unknown", 0
     label, distance = recognizer.predict(cv2.resize(gray_face, (200, 200)))
     confidence = max(0, int(100 - distance))
-    if distance < CONFIDENCE_THRESH:
+    if distance < CONFIDENCE_THRESH and confidence > 65:
         return label_map.get(label, "Unknown"), confidence
     return "Unknown", confidence
 
@@ -99,15 +99,29 @@ def recognize_face(gray_face):
 # LIVENESS
 # ─────────────────────────────────────────────
 def check_liveness(face_bgr, face_gray):
-    if cv2.Laplacian(face_gray, cv2.CV_64F).var() < 80:
-        return False, "SPOOF? Low texture"
-    if len(eye_cascade.detectMultiScale(face_gray, 1.1, 5,
-                                         minSize=(20,20))) == 0:
-        return False, "No eyes detected"
-    if np.std(cv2.cvtColor(face_bgr, cv2.COLOR_BGR2HSV)[:,:,1]) < 15:
-        return False, "SPOOF? Flat color"
-    return True, "Live"
+    score = 0
 
+    # 1. Texture check (relaxed)
+    texture = cv2.Laplacian(face_gray, cv2.CV_64F).var()
+    if texture > 40:   # reduced from 80
+        score += 1
+
+    # 2. Eye detection (optional, relaxed)
+    eyes = eye_cascade.detectMultiScale(face_gray, 1.1, 4, minSize=(15,15))
+    if len(eyes) >= 1:   # allow at least 1 eye
+        score += 1
+
+    # 3. Color variation (relaxed)
+    hsv = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2HSV)
+    color_var = np.std(hsv[:,:,1])
+    if color_var > 10:   # reduced from 15
+        score += 1
+
+    # Final decision (less strict)
+    if score >= 1:
+        return True, "Live"
+    else:
+        return False, "Low confidence"
 # ─────────────────────────────────────────────
 # ATTENDANCE CSV
 # ─────────────────────────────────────────────
