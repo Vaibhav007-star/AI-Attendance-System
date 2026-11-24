@@ -1,170 +1,179 @@
-# 📷 AI Attendance System — Face Recognition & Real-Time Tracking
+# 🌟 VisionAttend AI: Enterprise Face Biometric & Attendance Intelligence
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8.svg?logo=opencv&logoColor=white)](https://opencv.org/)
-[![MediaPipe](https://img.shields.io/badge/MediaPipe-Face%20Mesh-00A9E0.svg)](https://developers.google.com/mediapipe)
-[![Tkinter](https://img.shields.io/badge/GUI-Tkinter-green.svg)](https://docs.python.org/3/library/tkinter.html)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-5C3EE8.svg?logo=opencv&logoColor=white)](https://opencv.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Anti-Spoofing: Active](https://img.shields.io/badge/Anti--Spoofing-FFT_&_Laplacian-success.svg)](#anti-spoofing--liveness-engine)
 
-> **Real-time automated face recognition and contactless attendance management platform powered by OpenCV, Google MediaPipe Face Mesh, deep metric embeddings (Cosine Similarity), audio confirmation cues, and an interactive Tkinter desktop GUI with automated CSV logging.**
-
----
-
-## 📑 Table of Contents
-- [Architecture Overview](#-architecture-overview)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [Repository Structure](#-repository-structure)
-- [Installation & Setup](#-installation--setup)
-- [Workflow & How It Works](#-workflow--how-it-works)
-  - [Step 1: Face Registration & Capture](#step-1-face-registration--capture)
-  - [Step 2: Vector Embedding Generation](#step-2-vector-embedding-generation)
-  - [Step 3: Real-Time Attendance Recognition](#step-3-real-time-attendance-recognition)
-  - [Step 4: Interactive Desktop GUI](#step-4-interactive-desktop-gui)
-- [Attendance Log Output](#-attendance-log-output)
-- [Future Enhancements](#-future-enhancements)
-- [Author & License](#-author--license)
+**VisionAttend AI** is a state-of-the-art, enterprise-grade autonomous facial recognition attendance intelligence platform. Built with Python 3.12, FastAPI, and OpenCV, it eliminates buddy punching, time theft, and presentation attacks through multi-factor liveness detection, L2-normalized hypersphere biometric matching, and automated shift punctuality enforcement.
 
 ---
 
-## 🏗️ Architecture Overview
+## ⚡ Key Highlights & Capabilities
 
-```text
-  [ Webcam Video Stream ]
-            │
-            ▼
-  [ Face Detection ] ────────► MediaPipe Face Detection / Haar Cascades
-            │
-            ▼
-  [ Facial Landmark Embedding ] ──► 468 Dense Landmarks (MediaPipe FaceMesh)
-            │
-            ▼
-  [ Metric Matching ] ───────► Cosine Similarity against Known Registered Vectors
-            │
-      Score >= 0.90?
-     ┌──────┴──────┐
-    YES            NO
-     │              │
-     ▼              ▼
-[ Identity ]   [ "Unknown" ]
-     │
-     ├─► Play Audio Cue (beep.mp3)
-     ├─► Prevent Duplicate Logging in Same Session
-     └─► Append Record to attendance.csv (Name, RegNo, Date, Time)
+- 👁️ **Autonomous Face Kiosk**: Zero-contact continuous facial scan directly in any web browser or via native standalone desktop OpenCV window.
+- 🛡️ **Multi-Tier Anti-Spoofing Engine**:
+  - **Laplacian Blur & Texture Variance**: Prevents static paper print attacks.
+  - **2D FFT Frequency Analysis**: Detects LCD / OLED digital screen moiré patterns.
+  - **Specular Reflection & Color Depth**: Blocks tablet and phone replay attacks.
+- 📐 **Normalized Biometric Hypersphere**:
+  - Extracts 128-dimensional dense spatial & gradient representation vectors ($\|v\|_2 = 1.0$).
+  - Cosine similarity matching ($S_c \ge 0.58$) against an in-memory RAM cache for sub-120ms verification.
+- ⏱️ **Intelligent Punctuality & Anti-Passback**:
+  - Auto determines **On-Time** vs **Late** arrival according to customizable shift schedules (`09:30:00`).
+  - Automatic check-out handling with cooldown enforcement (5-minute anti-passback duplicate guard).
+- 📊 **Executive Analytics Dashboard**:
+  - Interactive Chart.js hourly arrival curves and department turnout breakdown.
+  - Live verification stream with instant status badges.
+- 📑 **Enterprise Reporting**:
+  - One-click export to standard CSV or stylized Microsoft Excel (`.xlsx`) workbooks.
+- 🎵 **Audio Feedback**:
+  - Synthesized Web Audio API chords for verified check-in, soft acknowledge tones for cooldown, and alarm tones for spoof attempts.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    Camera["Webcam / Edge IP Camera"] --> Preprocess["Frame Ingestion & CLAHE Normalization"]
+    Preprocess --> FaceDet["Multi-Scale Face Detector (OpenCV Haar/DNN)"]
+    FaceDet --> Crop["Face Region Extraction (Aligned 96x96)"]
+    
+    subgraph AntiSpoof ["Anti-Spoofing & Liveness Pipeline"]
+        Crop --> LapVar["Laplacian Texture Variance"]
+        Crop --> FFTMoire["2D FFT Frequency Spectrum (Moire)"]
+        Crop --> ColorVar["HSV Specular & Dynamic Color Variance"]
+        LapVar & FFTMoire & ColorVar --> LivenessGate{"Composite Liveness Score >= 0.45?"}
+    end
+
+    LivenessGate -- No (Attack) --> Alert["Trigger Spoof Rejection & Warning Tone"]
+    LivenessGate -- Yes (Real Face) --> FeatureExtract["128-D Dense Feature Extraction"]
+    
+    subgraph BiometricRAM ["RAM Hypersphere Gallery"]
+        Gallery[("Enrolled Embeddings Vector Cache")]
+    end
+
+    FeatureExtract --> Matcher["Cosine Similarity Matcher"]
+    Gallery <--> Matcher
+    Matcher --> MatchGate{"Sim >= Threshold (0.58)?"}
+    
+    MatchGate -- No --> Unknown["Unregistered Person Notification"]
+    MatchGate -- Yes --> StateMachine["Attendance State Machine"]
+    
+    subgraph AttendanceEngine ["Attendance State Machine"]
+        StateMachine --> CooldownCheck{"Within Cooldown (5 min)?"}
+        CooldownCheck -- Yes --> Ack["Acknowledge without duplicate"]
+        CooldownCheck -- No --> CheckLog{"First scan today?"}
+        CheckLog -- Yes --> MarkCheckIn["Record Check-In (On-Time / Late)"]
+        CheckLog -- No --> MarkCheckOut["Record / Update Check-Out"]
+    end
+    
+    MarkCheckIn & MarkCheckOut --> DB[("SQLite / PostgreSQL Database")]
+    MarkCheckIn & MarkCheckOut --> UIStream["Live WebSocket / Web Dashboard Feed"]
 ```
 
 ---
 
-## ✨ Key Features
+## 🚀 Quick Start Guide
 
-- 👤 **Dual Facial Recognition Pipelines:**
-  - **MediaPipe Face Mesh:** Generates high-fidelity landmark coordinate embeddings matched via Cosine Similarity metric spaces ($>90\%$ threshold).
-  - **Dlib / Deep Face Encodings:** Supports 128-dimensional Euclidean face encodings saved to serialized pickle vectors (`encodings.pkl`).
-- 🖥️ **Interactive Desktop GUI (`gui_attendance.py`):** User-friendly Tkinter interface showing live webcam preview, student/employee details input, and real-time attendance registration.
-- ⚡ **Real-Time Video Inference:** High-FPS tracking with OpenCV bounding boxes, confidence score overlays, and responsive escape controls.
-- 🔊 **Audio Confirmation (`beep.mp3`):** Instant auditory feedback upon successful identity verification and check-in.
-- 📝 **Automated Session Logging:** Deduplicated, timestamped recording to `attendance.csv` (Name, RegNo, Date, Time) ready for payroll or academic LMS import.
+### 1. Prerequisites
+- Python 3.12+ installed
+- Webcam or USB camera connected
 
----
-
-## 🧰 Tech Stack
-
-- **Computer Vision:** OpenCV (`cv2`), MediaPipe (`face_detection`, `face_mesh`), Haar Cascades
-- **Feature Extraction & Deep Embeddings:** Scikit-Learn (`cosine_similarity`), NumPy, Pickle
-- **Data Engineering:** Pandas
-- **Desktop Application:** Python Tkinter, Pillow (`PIL`)
-- **Audio Processing:** Playsound
-
----
-
-## 📂 Repository Structure
-
-```text
-AI-Attendance-System/
-├── attendance.py        # Core automated recognition pipeline with MediaPipe & audio feedback
-├── gui_attendance.py    # Desktop GUI application built with Tkinter & OpenCV
-├── capture_faces.py     # Web-cam data collector for registering new faces
-├── encode_faces.py      # Batch feature extractor producing serialized encodings
-├── main.py              # Lightweight real-time face detection visualizer
-├── attendance.csv       # Persistent attendance log database (CSV)
-├── beep.mp3             # Audio verification sound effect
-├── screenshot.jpg       # System UI preview
-└── README.md            # Comprehensive project documentation
-```
-
----
-
-## 🚀 Installation & Setup
-
-### 1. Clone the Repository
+### 2. Installation & Setup
 ```bash
+# Clone the repository
 git clone https://github.com/Vaibhav007-star/AI-Attendance-System.git
 cd AI-Attendance-System
-```
 
-### 2. Create and Activate Virtual Environment
-```bash
-# Windows
+# Create Python virtual environment
 python -m venv .venv
+
+# Activate virtual environment
+# Windows:
 .\.venv\Scripts\activate
-
-# Linux / macOS
-python3 -m venv .venv
+# Linux/macOS:
 source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### 3. Install Dependencies
+### 3. Initialize Database & Seed Defaults
 ```bash
-pip install opencv-python mediapipe numpy pandas scikit-learn pillow playsound
+python run.py --init-db
+```
+Default administrator credentials:
+- **Email**: `admin@visionattend.ai`
+- **Password**: `Admin@123`
+
+### 4. Run Web Application
+```bash
+python run.py
+```
+Open your browser and navigate to:
+- 👁️ **Live Camera Kiosk**: [http://localhost:8000/kiosk](http://localhost:8000/kiosk)
+- 📊 **Analytics Dashboard**: [http://localhost:8000/dashboard](http://localhost:8000/dashboard)
+- 👥 **Employee & Biometrics**: [http://localhost:8000/employees](http://localhost:8000/employees)
+- 📑 **Attendance Logs & Export**: [http://localhost:8000/records](http://localhost:8000/records)
+- 📡 **Interactive Swagger API**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### 5. Run Native Standalone Desktop Kiosk (Optional)
+To launch the high-speed desktop OpenCV window with local audio:
+```bash
+python run.py --desktop
 ```
 
 ---
 
-## 🎯 Workflow & How It Works
+## 📡 REST API Reference
 
-### Step 1: Face Registration & Capture
-Capture reference images of each person under various angles and lighting:
-```bash
-python capture_faces.py
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/recognition/verify` | `POST` | Live frame verification, liveness scoring & auto-attendance |
+| `/api/v1/recognition/enroll` | `POST` | Registers facial features into biometric profile |
+| `/api/v1/attendance/logs` | `GET` | Filter attendance logs by date, department, or status |
+| `/api/v1/attendance/export/csv` | `GET` | Download full attendance records as CSV |
+| `/api/v1/attendance/export/excel`| `GET` | Download styled Excel (.xlsx) workbook |
+| `/api/v1/dashboard/stats` | `GET` | Real-time KPIs, arrival velocity, and department stats |
+| `/api/v1/users` | `GET/POST`| Staff directory management and creation |
+| `/api/v1/auth/login` | `POST` | JWT Bearer authentication |
+
+---
+
+## 📂 Project Structure
+
 ```
-Images will be saved into the `dataset/<Person_Name>/` folder.
-
-### Step 2: Vector Embedding Generation
-Extract and serialize facial feature vectors:
-```bash
-python encode_faces.py
-```
-This generates `encodings.pkl` containing normalized facial feature vectors.
-
-### Step 3: Real-Time Attendance Recognition
-Launch the autonomous live camera scanner:
-```bash
-python attendance.py
-```
-- Recognizes faces in real time.
-- Plays `beep.mp3` upon detection.
-- Writes a new entry into `attendance.csv` only once per day/session per person.
-- Press `Q` or `ESC` to stop.
-
-### Step 4: Interactive Desktop GUI
-Alternatively, run the desktop dashboard:
-```bash
-python gui_attendance.py
+AI-Attendance-System/
+├── MASTER_PROMPT.md            # Comprehensive AI Master Prompt & Blueprint
+├── README.md                   # System documentation and manuals
+├── requirements.txt            # Python dependencies
+├── .env.example                # Environment variable template
+├── run.py                      # Application launcher (Web & Desktop modes)
+├── desktop_kiosk.py            # Standalone OpenCV Desktop Kiosk application
+├── app/
+│   ├── main.py                 # FastAPI application & lifespan management
+│   ├── config.py               # Pydantic configuration settings
+│   ├── core/
+│   │   ├── database.py         # SQLAlchemy engine & session manager
+│   │   ├── security.py         # JWT tokens & bcrypt password hashing
+│   │   └── exceptions.py       # Custom biometric & liveness exceptions
+│   ├── models/                 # Database schema models (User, Biometric, Attendance)
+│   ├── schemas/                # Pydantic validation schemas
+│   ├── services/
+│   │   ├── face_engine.py      # Face detection, 128-D embedding & cosine matcher
+│   │   ├── liveness_detector.py# Multi-factor presentation attack analyzer
+│   │   ├── attendance_service.py # Punctuality rules, cooldown & auto-checkout
+│   │   └── export_service.py   # CSV & Styled Excel generator
+│   ├── api/v1/                 # Modular RESTful API routers
+│   ├── static/                 # Styles, scripts, and sound assets
+│   └── templates/              # Modern Cyber-Glass Jinja2 templates
+└── storage/                    # Biometric avatars and attendance snapshots
 ```
 
 ---
 
-## 📊 Attendance Log Output (`attendance.csv`)
-
-| Name | RegNo | Date | Time | Status |
-|---|---|---|---|---|
-| Vaibhav | REG-2024-001 | 2026-11-22 | 09:15:32 | Present |
-| John Doe | REG-2024-042 | 2026-11-22 | 09:17:04 | Present |
-| Jane Smith | REG-2024-089 | 2026-11-22 | 09:18:22 | Present |
-
----
-
-## 👤 Author
-**Vaibhav**
-- GitHub: [@Vaibhav007-star](https://github.com/Vaibhav007-star)
-- Specialization: AI & Data Science Engineering • Computer Vision • Multi-Agent Systems
+## 📜 License
+This project is open-source under the [MIT License](LICENSE).

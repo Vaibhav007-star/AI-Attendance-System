@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Employees & Biometric Enrollment - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <i data-lucide="users" class="w-6 h-6 text-cyan-400"></i>
+                Employee Biometric Management
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Enroll staff faces into AI hypersphere cache and manage directory</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="openAddEmployeeModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-bold text-white transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                <span>Add Employee</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="p-4 rounded-xl glass-card flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-2 flex-1 max-w-md">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <input type="text" id="search-input" placeholder="Search by name, ID, or email..." oninput="filterEmployees()" class="bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none w-full">
+        </div>
+        <div class="flex items-center space-x-3">
+            <select id="department-filter" onchange="filterEmployees()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-300 focus:ring-1 focus:ring-cyan-500">
+                <option value="">All Departments</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Employees Grid -->
+    <div id="employees-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="col-span-full py-12 text-center text-slate-500 text-xs">
+            <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 text-cyan-400 animate-spin"></i>
+            Loading staff directory...
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Employee -->
+<div id="add-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl glass-card border border-slate-700 p-6 shadow-2xl relative">
+        <button onclick="closeAddEmployeeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <h3 class="text-lg font-bold text-white mb-1">Add New Employee</h3>
+        <p class="text-xs text-slate-400 mb-4">Create staff record and proceed to biometric enrollment</p>
+
+        <form id="add-employee-form" onsubmit="handleCreateEmployee(event)" class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Employee ID *</label>
+                <input type="text" id="new-empid" required placeholder="e.g. VA-105" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-1 focus:ring-cyan-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Full Name *</label>
+                <input type="text" id="new-name" required placeholder="e.g. John Doe" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-1 focus:ring-cyan-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Email Address *</label>
+                <input type="email" id="new-email" required placeholder="john@visionattend.ai" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-1 focus:ring-cyan-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Department</label>
+                    <select id="new-department" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-1 focus:ring-cyan-500">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Designation</label>
+                    <input type="text" id="new-designation" placeholder="e.g. AI Engineer" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                </div>
+            </div>
+            <div class="pt-3 flex justify-end space-x-2">
+                <button type="button" onclick="closeAddEmployeeModal()" class="px-4 py-2 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-slate-950">Save Employee</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Biometric Face Enrollment with Live Webcam -->
+<div id="enroll-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-2xl glass-card border border-cyan-500/40 p-6 shadow-2xl relative">
+        <button onclick="closeEnrollModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center space-x-3 mb-4">
+            <div class="p-2.5 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800">
+                <i data-lucide="scan" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-white">Biometric Face Enrollment</h3>
+                <p id="enroll-modal-subtitle" class="text-xs text-slate-400">Capturing facial embeddings for AI recognition</p>
+            </div>
+        </div>
+
+        <!-- Camera Preview Box -->
+        <div class="relative rounded-xl overflow-hidden bg-black aspect-video border border-slate-700 flex items-center justify-center mb-4">
+            <video id="enroll-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+            <div class="scan-laser"></div>
+            <div class="reticle-corner reticle-tl"></div>
+            <div class="reticle-corner reticle-tr"></div>
+            <div class="reticle-corner reticle-bl"></div>
+            <div class="reticle-corner reticle-br"></div>
+        </div>
+
+        <div id="enroll-status-banner" class="p-2.5 rounded-lg bg-slate-800/80 border border-slate-700 text-xs text-slate-300 mb-4 flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i>
+            <span>Look directly at camera in good lighting. Press 'Capture Face'.</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <label class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                <span>Upload Photo</span>
+                <input type="file" id="enroll-file-input" accept="image/*" class="hidden" onchange="handleFileUploadEnroll(event)">
+            </label>
+            <button id="enroll-capture-btn" onclick="captureAndEnrollFace()" class="px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-cyan-500/20">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+                <span>Capture Face</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allEmployees = [];
+let departmentsList = [];
+let currentEnrollUserId = null;
+let enrollStream = null;
+
+async function loadEmployeesAndDepts() {
+    try {
+        const [usersRes, deptsRes] = await Promise.all([
+            fetch('/api/v1/users'),
+            fetch('/api/v1/users/departments')
+        ]);
+        allEmployees = await usersRes.json();
+        departmentsList = await deptsRes.json();
+
+        // Populate department filters
+        const deptSelect = document.getElementById('department-filter');
+        const newDeptSelect = document.getElementById('new-department');
+        deptSelect.innerHTML = '<option value="">All Departments</option>';
+        newDeptSelect.innerHTML = '';
+
+        departmentsList.forEach(d => {
+            deptSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            newDeptSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+        });
+
+        renderEmployees(allEmployees);
+    } catch (e) {
+        console.error("Failed to load employees:", e);
+    }
+}
+
+function renderEmployees(users) {
+    const grid = document.getElementById('employees-grid');
+    if (!users || users.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500 text-xs">No employees found matching criteria.</div>';
+        return;
+    }
+
+    grid.innerHTML = users.map(user => `
+        <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center font-bold text-sm text-cyan-400">
+                        ${user.avatar_path ? `<img src="${user.avatar_path}" class="w-full h-full object-cover">` : (user.full_name ? user.full_name.slice(0, 2).toUpperCase() : 'VA')}
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">${user.full_name}</h4>
+                        <p class="text-xs text-slate-400">${user.designation || 'Staff'} &bull; <span class="text-cyan-400 font-mono">${user.employee_id}</span></p>
+                    </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${user.has_biometric ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
+                    ${user.has_biometric ? 'Enrolled' : 'No Face AI'}
+                </span>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <span class="text-slate-400">${user.department ? user.department.name : 'General'}</span>
+                <button onclick="startBiometricEnroll(${user.id}, '${user.full_name}', '${user.employee_id}')" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 font-semibold transition flex items-center gap-1.5">
+                    <i data-lucide="scan-face" class="w-3.5 h-3.5"></i>
+                    <span>${user.has_biometric ? 'Re-enroll' : 'Enroll Face'}</span>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+
+function filterEmployees() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const deptId = document.getElementById('department-filter').value;
+
+    const filtered = allEmployees.filter(u => {
+        const matchesQ = u.full_name.toLowerCase().includes(q) || u.employee_id.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+        const matchesDept = !deptId || (u.department_id && u.department_id.toString() === deptId);
+        return matchesQ && matchesDept;
+    });
+
+    renderEmployees(filtered);
+}
+
+// Add Employee Modal
+function openAddEmployeeModal() {
+    document.getElementById('add-modal').classList.remove('hidden');
+}
+
+function closeAddEmployeeModal() {
+    document.getElementById('add-modal').classList.add('hidden');
+}
+
+async function handleCreateEmployee(e) {
+    e.preventDefault();
+    const payload = {
+        employee_id: document.getElementById('new-empid').value.trim(),
+        full_name: document.getElementById('new-name').value.trim(),
+        email: document.getElementById('new-email').value.trim(),
+        department_id: parseInt(document.getElementById('new-department').value) || null,
+        designation: document.getElementById('new-designation').value.trim() || 'Staff'
+    };
+
+    try {
+        const res = await fetch('/api/v1/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.detail || 'Failed to create employee');
+            return;
+        }
+        const created = await res.json();
+        closeAddEmployeeModal();
+        await loadEmployeesAndDepts();
+        // Immediately trigger face enrollment for newly created employee
+        startBiometricEnroll(created.id, created.full_name, created.employee_id);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Face Enrollment Modal & Webcam
+async function startBiometricEnroll(userId, name, empId) {
+    currentEnrollUserId = userId;
+    document.getElementById('enroll-modal-subtitle').textContent = `Enrolling face profile for ${name} (${empId})`;
+    document.getElementById('enroll-modal').classList.remove('hidden');
+
+    const video = document.getElementById('enroll-video');
+    try {
+        enrollStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        video.srcObject = enrollStream;
+        video.play();
+    } catch (err) {
+        console.error("Enroll camera error:", err);
+    }
+}
+
+function closeEnrollModal() {
+    document.getElementById('enroll-modal').classList.add('hidden');
+    if (enrollStream) {
+        enrollStream.getTracks().forEach(t => t.stop());
+        enrollStream = null;
+    }
+}
+
+async function captureAndEnrollFace() {
+    const video = document.getElementById('enroll-video');
+    if (!video || !currentEnrollUserId) return;
+
+    const banner = document.getElementById('enroll-status-banner');
+    banner.innerHTML = `<i data-lucide="loader" class="w-4 h-4 text-cyan-400 animate-spin"></i><span>Extracting deep feature vector...</span>`;
+    lucide.createIcons();
+
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = 640;
+    offCanvas.height = 480;
+    const ctx = offCanvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 640, 480);
+    const dataUrl = offCanvas.toDataURL('image/jpeg', 0.90);
+
+    const formData = new FormData();
+    formData.append('user_id', currentEnrollUserId.toString());
+    formData.append('image_base64', dataUrl);
+
+    try {
+        const res = await fetch('/api/v1/recognition/enroll', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            banner.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-400"></i><span class="text-red-300">${data.detail || 'Enrollment failed.'}</span>`;
+            lucide.createIcons();
+            return;
+        }
+
+        banner.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-300">Biometric enrollment successful!</span>`;
+        lucide.createIcons();
+        setTimeout(() => {
+            closeEnrollModal();
+            loadEmployeesAndDepts();
+        }, 1200);
+    } catch (e) {
+        console.error(e);
+        banner.innerHTML = `<span class="text-red-400">Network error during enrollment</span>`;
+    }
+}
+
+async function handleFileUploadEnroll(e) {
+    const file = e.target.files[0];
+    if (!file || !currentEnrollUserId) return;
+
+    const formData = new FormData();
+    formData.append('user_id', currentEnrollUserId.toString());
+    formData.append('image', file);
+
+    const banner = document.getElementById('enroll-status-banner');
+    banner.innerHTML = `<span>Uploading and analyzing image...</span>`;
+
+    try {
+        const res = await fetch('/api/v1/recognition/enroll', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            banner.innerHTML = `<span class="text-red-400">${data.detail || 'Failed'}</span>`;
+            return;
+        }
+        banner.innerHTML = `<span class="text-emerald-300">Enrollment successful!</span>`;
+        setTimeout(() => {
+            closeEnrollModal();
+            loadEmployeesAndDepts();
+        }, 1200);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadEmployeesAndDepts);
+</script>
+{% endblock %}

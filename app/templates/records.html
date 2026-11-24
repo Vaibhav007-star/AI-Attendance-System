@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Records & Historical Logs - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <i data-lucide="clipboard-list" class="w-6 h-6 text-cyan-400"></i>
+                Attendance Records &amp; Audits
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Audit biometric check-ins, punctuality status, and export enterprise reports</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="/api/v1/attendance/export/csv" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition flex items-center gap-2">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Export CSV</span>
+            </a>
+            <a href="/api/v1/attendance/export/excel" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs font-semibold text-emerald-300 transition flex items-center gap-2">
+                <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Export Styled Excel</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="p-4 rounded-xl glass-card flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Status</label>
+                <select id="filter-status" onchange="fetchRecords()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:ring-1 focus:ring-cyan-500">
+                    <option value="">All Statuses</option>
+                    <option value="On-Time">On-Time</option>
+                    <option value="Late">Late</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">From Date</label>
+                <input type="date" id="filter-from-date" onchange="fetchRecords()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:ring-1 focus:ring-cyan-500">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">To Date</label>
+                <input type="date" id="filter-to-date" onchange="fetchRecords()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:ring-1 focus:ring-cyan-500">
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-white px-2 py-1">Reset</button>
+            <button onclick="fetchRecords()" class="px-3.5 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/30">Apply</button>
+        </div>
+    </div>
+
+    <!-- Attendance Logs Table -->
+    <div class="p-5 rounded-2xl glass-card border-slate-800">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                        <th class="py-3 px-4">Log ID</th>
+                        <th class="py-3 px-4">Employee</th>
+                        <th class="py-3 px-4">Department</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Check-In</th>
+                        <th class="py-3 px-4">Check-Out</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4">Confidence</th>
+                        <th class="py-3 px-4">Method</th>
+                    </tr>
+                </thead>
+                <tbody id="records-table-body" class="divide-y divide-slate-800/60">
+                    <tr>
+                        <td colspan="9" class="py-8 text-center text-slate-500">Loading attendance records...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function fetchRecords() {
+    const status = document.getElementById('filter-status').value;
+    const fromDate = document.getElementById('filter-from-date').value;
+    const toDate = document.getElementById('filter-to-date').value;
+
+    let url = '/api/v1/attendance/logs?limit=250';
+    if (status) url += `&status=${encodeURIComponent(status)}`;
+    if (fromDate) url += `&start_date=${encodeURIComponent(fromDate)}`;
+    if (toDate) url += `&end_date=${encodeURIComponent(toDate)}`;
+
+    try {
+        const res = await fetch(url);
+        const logs = await res.json();
+        const tbody = document.getElementById('records-table-body');
+
+        if (!logs || logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-500">No attendance logs found matching filters.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = logs.map(log => `
+            <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-4 font-mono text-slate-400">#${log.id}</td>
+                <td class="py-3 px-4 font-semibold text-white">
+                    <div>${log.user ? log.user.full_name : 'Unknown'}</div>
+                    <div class="text-[10px] text-slate-400 font-mono font-normal">${log.user ? log.user.employee_id : '--'}</div>
+                </td>
+                <td class="py-3 px-4 text-slate-300">${log.user && log.user.department ? log.user.department.name : 'General'}</td>
+                <td class="py-3 px-4 font-mono text-slate-300">${log.log_date}</td>
+                <td class="py-3 px-4 font-mono text-emerald-400">${log.check_in ? new Date(log.check_in).toLocaleTimeString('en-US', {hour12: false}) : '--'}</td>
+                <td class="py-3 px-4 font-mono text-slate-400">${log.check_out ? new Date(log.check_out).toLocaleTimeString('en-US', {hour12: false}) : '--'}</td>
+                <td class="py-3 px-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.status === 'Late' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+                        ${log.status}
+                    </span>
+                </td>
+                <td class="py-3 px-4 font-mono text-cyan-400">${Math.round(log.match_confidence * 100)}%</td>
+                <td class="py-3 px-4 text-slate-400 font-mono text-[10px]">${log.verification_method}</td>
+            </tr>
+        `).join('');
+
+        lucide.createIcons();
+    } catch (e) {
+        console.error("Failed to fetch records:", e);
+    }
+}
+
+function resetFilters() {
+    document.getElementById('filter-status').value = '';
+    document.getElementById('filter-from-date').value = '';
+    document.getElementById('filter-to-date').value = '';
+    fetchRecords();
+}
+
+document.addEventListener('DOMContentLoaded', fetchRecords);
+</script>
+{% endblock %}

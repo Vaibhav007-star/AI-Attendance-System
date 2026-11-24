@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center">
+    <div class="w-full max-w-md p-8 rounded-2xl glass-card border-slate-800 shadow-2xl relative overflow-hidden">
+        <!-- Glow Circle -->
+        <div class="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
+
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-cyan-500/20">
+                <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white tracking-tight">VisionAttend Portal</h2>
+            <p class="text-xs text-slate-400 mt-1">Authenticate to access administrator controls</p>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+                <div class="relative">
+                    <input type="email" id="login-email" required value="admin@visionattend.ai" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white pl-10 focus:ring-1 focus:ring-cyan-500">
+                    <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+                <div class="relative">
+                    <input type="password" id="login-password" required value="Admin@123" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white pl-10 focus:ring-1 focus:ring-cyan-500">
+                    <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                </div>
+            </div>
+
+            <div id="login-error" class="text-xs text-red-400 hidden p-2.5 rounded-lg bg-red-950/60 border border-red-800"></div>
+
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-bold text-white transition shadow-lg shadow-cyan-500/25 flex items-center justify-center space-x-2">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                <span>Sign In to System</span>
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
+            <span>Default demo credentials:</span>
+            <div class="font-mono text-[11px] text-cyan-400/80 mt-1">admin@visionattend.ai / Admin@123</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+
+    errorEl.classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.detail || 'Login failed';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_profile', JSON.stringify(data.user));
+        window.location.href = '/dashboard';
+    } catch (err) {
+        console.error(err);
+        errorEl.textContent = 'Server connection failed';
+        errorEl.classList.remove('hidden');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+/* Cyber Glassmorphic Visual System */
+:root {
+    --cyber-glow: rgba(0, 242, 254, 0.4);
+}
+
+.glass-card {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-hover {
+    transition: all 0.25s ease;
+}
+
+.glass-card-hover:hover {
+    border-color: rgba(0, 242, 254, 0.4);
+    box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.1);
+}
+
+/* Scanner Laser Animation */
+.scan-laser {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00f2fe, #4facfe, transparent);
+    box-shadow: 0 0 15px #00f2fe;
+    animation: scanAnim 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes scanAnim {
+    0% {
+        top: 5%;
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: 92%;
+        opacity: 0.2;
+    }
+}
+
+/* Reticle Corner Brackets */
+.reticle-corner {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-color: #00f2fe;
+    border-width: 3px;
+    pointer-events: none;
+}
+
+.reticle-tl {
+    top: 15%;
+    left: 15%;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 8px;
+}
+
+.reticle-tr {
+    top: 15%;
+    right: 15%;
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 8px;
+}
+
+.reticle-bl {
+    bottom: 15%;
+    left: 15%;
+    border-right: none;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+}
+
+.reticle-br {
+    bottom: 15%;
+    right: 15%;
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: 8px;
+}
+
+/* Pulse Glow */
+.glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.25);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b1329;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}

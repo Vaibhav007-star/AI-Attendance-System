@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & Attendance Intelligence - {{ app_name }}{% endblock %}
+
+{% block head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <i data-lucide="line-chart" class="w-6 h-6 text-cyan-400"></i>
+                Executive Attendance Analytics
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Real-time attendance rates, punctuality trends, and workforce metrics</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="loadDashboardData()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Refresh Live Stats</span>
+            </button>
+            <a href="/records" class="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-xs font-semibold text-cyan-300 transition flex items-center gap-2">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export Report</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 Key Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Workforce -->
+        <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Staff</span>
+                <div class="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <span id="stat-total" class="text-3xl font-bold text-white font-mono">0</span>
+                <span class="text-xs text-slate-400">Active accounts</span>
+            </div>
+        </div>
+
+        <!-- Present Today -->
+        <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Present Today</span>
+                <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <span id="stat-present" class="text-3xl font-bold text-emerald-400 font-mono">0</span>
+                <span id="stat-rate" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">0%</span>
+            </div>
+        </div>
+
+        <!-- On-Time -->
+        <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">On-Time Arrivals</span>
+                <div class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <span id="stat-ontime" class="text-3xl font-bold text-cyan-400 font-mono">0</span>
+                <span class="text-xs text-slate-400">&le; 09:30 AM</span>
+            </div>
+        </div>
+
+        <!-- Late Arrivals -->
+        <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Late Arrivals</span>
+                <div class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <span id="stat-late" class="text-3xl font-bold text-amber-400 font-mono">0</span>
+                <span class="text-xs text-amber-400/80">Shift delayed</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Grid: Hourly Arrival Curve & Department Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Hourly Arrivals Line Chart (8 Cols) -->
+        <div class="lg:col-span-8 p-5 rounded-2xl glass-card border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-white">Today's Check-In Velocity</h3>
+                    <p class="text-xs text-slate-400">Hourly distribution of employee arrivals</p>
+                </div>
+                <div class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 font-mono">Punctuality Curve</div>
+            </div>
+            <div class="h-64">
+                <canvas id="hourlyArrivalsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Department Donut Breakdown (4 Cols) -->
+        <div class="lg:col-span-4 p-5 rounded-2xl glass-card border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-white">Department Turnout</h3>
+                    <p class="text-xs text-slate-400">Present staff by department</p>
+                </div>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="deptDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-Time Activity Log Table -->
+    <div class="p-5 rounded-2xl glass-card border-slate-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+                Today's Live Verification Stream
+            </h3>
+            <span class="text-xs text-slate-400">Auto-updates from AI Vision Kiosk</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                        <th class="py-3 px-4">Employee</th>
+                        <th class="py-3 px-4">Department</th>
+                        <th class="py-3 px-4">Check-In</th>
+                        <th class="py-3 px-4">Check-Out</th>
+                        <th class="py-3 px-4">Confidence</th>
+                        <th class="py-3 px-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="dashboard-table-body" class="divide-y divide-slate-800/60">
+                    <tr>
+                        <td colspan="6" class="py-6 text-center text-slate-500">Loading live attendance records...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let hourlyChart = null;
+let deptChart = null;
+
+async function loadDashboardData() {
+    try {
+        const res = await fetch('/api/v1/dashboard/stats');
+        const data = await res.json();
+
+        // Update KPIs
+        document.getElementById('stat-total').textContent = data.total_employees;
+        document.getElementById('stat-present').textContent = data.present_today;
+        document.getElementById('stat-rate').textContent = `${data.attendance_rate}% Rate`;
+        document.getElementById('stat-ontime').textContent = data.on_time_today;
+        document.getElementById('stat-late').textContent = data.late_today;
+
+        // Render Hourly Arrivals Chart
+        const hourlyLabels = Object.keys(data.hourly_arrivals);
+        const hourlyValues = Object.values(data.hourly_arrivals);
+
+        if (hourlyChart) hourlyChart.destroy();
+        const ctxHourly = document.getElementById('hourlyArrivalsChart').getContext('2d');
+        hourlyChart = new Chart(ctxHourly, {
+            type: 'line',
+            data: {
+                labels: hourlyLabels,
+                datasets: [{
+                    label: 'Arrivals',
+                    data: hourlyValues,
+                    borderColor: '#00f2fe',
+                    backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#00f2fe',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 }, beginAtZero: true }
+                }
+            }
+        });
+
+        // Render Department Donut Chart
+        const deptLabels = Object.keys(data.department_distribution);
+        const deptValues = Object.values(data.department_distribution);
+
+        if (deptChart) deptChart.destroy();
+        const ctxDept = document.getElementById('deptDistributionChart').getContext('2d');
+        deptChart = new Chart(ctxDept, {
+            type: 'doughnut',
+            data: {
+                labels: deptLabels.length > 0 ? deptLabels : ['No Attendance'],
+                datasets: [{
+                    data: deptValues.length > 0 ? deptValues : [1],
+                    backgroundColor: ['#00f2fe', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
+                },
+                cutout: '68%'
+            }
+        });
+
+        // Render Table Rows
+        const tbody = document.getElementById('dashboard-table-body');
+        if (!data.recent_logs || data.recent_logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">No attendance registered today yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.recent_logs.map(log => `
+            <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-4 font-semibold text-white flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-[10px] text-cyan-400">
+                        ${log.full_name ? log.full_name.slice(0, 2).toUpperCase() : 'VA'}
+                    </div>
+                    <div>
+                        <div>${log.full_name}</div>
+                        <div class="text-[10px] text-slate-400 font-normal">${log.employee_id}</div>
+                    </div>
+                </td>
+                <td class="py-3 px-4 text-slate-300">${log.department}</td>
+                <td class="py-3 px-4 font-mono text-slate-200">${log.check_in}</td>
+                <td class="py-3 px-4 font-mono text-slate-400">${log.check_out || '--'}</td>
+                <td class="py-3 px-4 font-mono text-cyan-400">${log.confidence}%</td>
+                <td class="py-3 px-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.status === 'Late' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+                        ${log.status}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+
+        lucide.createIcons();
+    } catch (e) {
+        console.error("Dashboard error:", e);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+    setInterval(loadDashboardData, 8000);
+});
+</script>
+{% endblock %}

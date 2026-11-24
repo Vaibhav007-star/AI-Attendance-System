@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            900: '#060913',
+                            800: '#0b1329',
+                            700: '#14213d',
+                            600: '#1e293b',
+                            cyan: '#00f2fe',
+                            blue: '#4facfe',
+                            emerald: '#10b981',
+                            crimson: '#ef4444',
+                            amber: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Cyber Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-cyber-900 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-cyber-900/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/30">
+                    <i data-lucide="scan-face" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">VisionAttend AI</span>
+                    <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-800/60 text-cyan-300">v2.0 Pro</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <a href="/kiosk" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span>Live Kiosk</span>
+                </a>
+                <a href="/dashboard" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/employees" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Employees & Face AI</span>
+                </a>
+                <a href="/records" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                    <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                    <span>Attendance Logs</span>
+                </a>
+            </nav>
+
+            <!-- Status Indicator & Action -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>AI Engine Online</span>
+                </div>
+                <a href="/login" class="px-3.5 py-2 rounded-lg text-sm font-medium border border-slate-700 hover:border-cyan-500/50 bg-slate-800/40 hover:bg-slate-800 transition text-slate-300 hover:text-white flex items-center space-x-1.5">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    <span id="nav-auth-label">Portal</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/60 py-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>VisionAttend AI Biometric Security Platform &bull; Python 3.12 &amp; OpenCV Deep Vision</span>
+            <div class="flex items-center space-x-4">
+                <span class="text-cyan-400 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Anti-Spoof Active</span>
+                <span>Sub-120ms Inference</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
