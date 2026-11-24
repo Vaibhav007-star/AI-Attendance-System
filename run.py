@@ -17,9 +17,15 @@ def main():
     parser.add_argument("--port", type=int, default=settings.PORT, help="Bind socket port")
     parser.add_argument("--reload", action="store_true", help="Enable code auto-reloading")
     parser.add_argument("--init-db", action="store_true", help="Initialize database schema and seed data only")
+    parser.add_argument("--seed", action="store_true", help="Seed full enterprise workforce dataset for demo showcases")
     parser.add_argument("--desktop", action="store_true", help="Launch native OpenCV desktop camera kiosk")
     parser.add_argument("--camera", type=int, default=0, help="Webcam device index for desktop kiosk")
     args = parser.parse_args()
+
+    if args.seed:
+        from seed_demo_data import seed_enterprise_data
+        seed_enterprise_data()
+        return
 
     if args.init_db:
         print("[VisionAttend AI] Initializing database...")
