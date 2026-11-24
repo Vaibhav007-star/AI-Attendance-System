@@ -13,6 +13,7 @@
                 extend: {
                     colors: {
                         cyber: {
+                            950: '#030712',
                             900: '#060913',
                             800: '#0b1329',
                             700: '#14213d',
@@ -34,38 +35,46 @@
     <link rel="stylesheet" href="/static/css/styles.css">
     {% block head %}{% endblock %}
 </head>
-<body class="bg-cyber-900 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+<body class="bg-cyber-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
     <!-- Top Navigation Bar -->
-    <header class="border-b border-slate-800/80 bg-cyber-900/90 backdrop-blur-md sticky top-0 z-50">
+    <header class="border-b border-slate-800/80 bg-cyber-950/90 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <!-- Brand -->
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/30">
+            <a href="/" class="flex items-center space-x-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/40 group-hover:scale-105 transition-all">
                     <i data-lucide="scan-face" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <span class="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">VisionAttend AI</span>
-                    <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-800/60 text-cyan-300">v2.0 Pro</span>
+                    <span class="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300">VisionAttend AI</span>
+                    <span class="ml-2 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-800/60 text-cyan-300">v2.0 Pro</span>
                 </div>
-            </div>
+            </a>
 
             <!-- Navigation Links -->
-            <nav class="hidden md:flex items-center space-x-1">
-                <a href="/kiosk" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+            <nav class="hidden lg:flex items-center space-x-1">
+                <a href="/" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/kiosk" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                     <span>Live Kiosk</span>
                 </a>
-                <a href="/dashboard" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                <a href="/dashboard" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                     <span>Analytics</span>
                 </a>
-                <a href="/employees" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                <a href="/employees" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
                     <i data-lucide="users" class="w-4 h-4"></i>
-                    <span>Employees & Face AI</span>
+                    <span>Staff &amp; Face AI</span>
                 </a>
-                <a href="/records" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all hover:bg-slate-800/60 text-slate-300 hover:text-cyan-400">
+                <a href="/records" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
                     <i data-lucide="clipboard-list" class="w-4 h-4"></i>
-                    <span>Attendance Logs</span>
+                    <span>Logs</span>
+                </a>
+                <a href="/settings" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
+                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                    <span>Settings</span>
                 </a>
             </nav>
 
@@ -75,11 +84,25 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>AI Engine Online</span>
                 </div>
-                <a href="/login" class="px-3.5 py-2 rounded-lg text-sm font-medium border border-slate-700 hover:border-cyan-500/50 bg-slate-800/40 hover:bg-slate-800 transition text-slate-300 hover:text-white flex items-center space-x-1.5">
-                    <i data-lucide="log-in" class="w-4 h-4"></i>
-                    <span id="nav-auth-label">Portal</span>
+                <a href="/login" class="px-3.5 py-2 rounded-lg text-xs font-semibold border border-slate-700 hover:border-cyan-500/50 bg-slate-800/50 hover:bg-slate-800 transition text-slate-200 hover:text-white flex items-center space-x-1.5">
+                    <i data-lucide="shield" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span id="nav-auth-label">Admin Portal</span>
                 </a>
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
             </div>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-800 bg-cyber-950/95 px-4 pt-3 pb-4 space-y-1 text-sm">
+            <a href="/" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-cyan-400">Home</a>
+            <a href="/kiosk" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-cyan-400">Live Kiosk</a>
+            <a href="/dashboard" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-cyan-400">Analytics</a>
+            <a href="/employees" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-cyan-400">Staff &amp; Face AI</a>
+            <a href="/records" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-cyan-400">Attendance Logs</a>
+            <a href="/settings" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-cyan-400">System Settings</a>
         </div>
     </header>
 
@@ -89,18 +112,28 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800/60 py-4 text-center text-xs text-slate-500">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>VisionAttend AI Biometric Security Platform &bull; Python 3.12 &amp; OpenCV Deep Vision</span>
+    <footer class="border-t border-slate-800/60 py-6 text-center text-xs text-slate-500 bg-cyber-950/80">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-300">VisionAttend AI</span>
+                <span>&bull;</span>
+                <span>Enterprise Computer Vision &amp; Biometrics Platform</span>
+            </div>
             <div class="flex items-center space-x-4">
-                <span class="text-cyan-400 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Anti-Spoof Active</span>
-                <span>Sub-120ms Inference</span>
+                <a href="/kiosk" class="hover:text-cyan-400 transition">Kiosk Mode</a>
+                <a href="/dashboard" class="hover:text-cyan-400 transition">Analytics</a>
+                <a href="/settings" class="hover:text-cyan-400 transition">Policy Settings</a>
+                <a href="/docs" target="_blank" class="hover:text-cyan-400 transition">REST API Docs</a>
             </div>
         </div>
     </footer>
 
     <script>
         lucide.createIcons();
+        function toggleMobileMenu() {
+            const m = document.getElementById('mobile-menu');
+            m.classList.toggle('hidden');
+        }
     </script>
     {% block scripts %}{% endblock %}
 </body>

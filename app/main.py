@@ -105,8 +105,8 @@ app.include_router(api_v1_router)
 
 # Frontend UI Routes
 @app.get("/", response_class=HTMLResponse)
-def index_redirect():
-    return RedirectResponse(url="/kiosk")
+def landing_page(request: Request):
+    return templates.TemplateResponse(request=request, name="landing.html", context={"app_name": settings.APP_NAME})
 
 @app.get("/kiosk", response_class=HTMLResponse)
 def kiosk_page(request: Request):
@@ -123,6 +123,10 @@ def employees_page(request: Request):
 @app.get("/records", response_class=HTMLResponse)
 def records_page(request: Request):
     return templates.TemplateResponse(request=request, name="records.html", context={"app_name": settings.APP_NAME})
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings_page(request: Request):
+    return templates.TemplateResponse(request=request, name="settings.html", context={"app_name": settings.APP_NAME})
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):

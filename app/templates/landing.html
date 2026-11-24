@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}VisionAttend AI - Next-Gen Facial Biometric & Attendance Platform{% endblock %}
+
+{% block content %}
+<div class="space-y-20 py-4">
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden pt-6 pb-12">
+        <!-- Ambient Glowing Background Orbs -->
+        <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-cyan-500/20 via-blue-600/15 to-purple-600/10 blur-[120px] pointer-events-none rounded-full"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+            <!-- Left Hero Content (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-cyan-500/30 text-xs font-semibold text-cyan-300 shadow-lg shadow-cyan-500/10">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                    <span>AI Biometrics 2.0 &bull; Powered by Deep Learning</span>
+                </div>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                    Contactless AI Attendance. <br>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
+                        Zero Spoofing. Zero Friction.
+                    </span>
+                </h1>
+
+                <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                    VisionAttend AI transforms standard webcams and edge hardware into intelligent autonomous attendance terminals. Featuring sub-120ms facial feature extraction, multi-frequency anti-spoofing, and automated punctuality workflows.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+                    <a href="/kiosk" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-sm font-bold text-white shadow-xl shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5 flex items-center space-x-2.5">
+                        <i data-lucide="camera" class="w-5 h-5"></i>
+                        <span>Launch Camera Kiosk</span>
+                    </a>
+
+                    <a href="/dashboard" class="px-6 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm font-bold text-slate-200 transition-all flex items-center space-x-2.5">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 text-cyan-400"></i>
+                        <span>View Live Analytics</span>
+                    </a>
+
+                    <a href="/employees" class="px-4 py-3.5 rounded-xl bg-transparent hover:bg-slate-800/50 text-sm font-semibold text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>Enroll Staff Face</span>
+                    </a>
+                </div>
+
+                <!-- Trust Micro-Badges -->
+                <div class="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Active Anti-Spoofing</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Sub-120ms Latency</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Anti-Passback Guard</span>
+                </div>
+            </div>
+
+            <!-- Right Hero Visual: Interactive Live Scanner Mockup (5 Cols) -->
+            <div class="lg:col-span-5">
+                <div class="relative mx-auto max-w-md rounded-2xl glass-card border border-cyan-500/40 p-4 shadow-2xl shadow-cyan-500/15 overflow-hidden">
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="ml-2 font-mono text-slate-400">terminal@visionattend:~</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-700 text-emerald-400 text-[10px] font-mono">LIVE READY</span>
+                    </div>
+
+                    <!-- Simulated Camera Frame with Reticle & Laser -->
+                    <div class="relative aspect-[4/3] rounded-xl bg-slate-950 overflow-hidden border border-slate-800 flex items-center justify-center">
+                        <!-- Simulated Face Silhouette -->
+                        <div class="w-32 h-44 rounded-full border-2 border-dashed border-cyan-500/40 flex flex-col items-center justify-center p-2 relative">
+                            <i data-lucide="scan-face" class="w-16 h-16 text-cyan-400/80 mb-2"></i>
+                            <span class="text-[10px] font-mono text-cyan-300">Biometric Focus</span>
+                        </div>
+
+                        <!-- Reticle Corners -->
+                        <div class="reticle-corner reticle-tl"></div>
+                        <div class="reticle-corner reticle-tr"></div>
+                        <div class="reticle-corner reticle-bl"></div>
+                        <div class="reticle-corner reticle-br"></div>
+                        <div class="scan-laser"></div>
+
+                        <!-- Live Telemetry Badges -->
+                        <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                            <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur font-mono text-[10px] text-cyan-400 border border-slate-800">YuNet CNN: ACTIVE</span>
+                            <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur font-mono text-[10px] text-emerald-400 border border-slate-800">Liveness: 98.4%</span>
+                        </div>
+
+                        <div class="absolute bottom-2 inset-x-2 p-2 rounded-lg bg-slate-900/90 backdrop-blur border border-slate-700/80 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-6 h-6 rounded bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-[10px] text-cyan-300 font-bold">VA</div>
+                                <div>
+                                    <div class="text-[11px] font-bold text-white">Alan Turing &bull; AI Lead</div>
+                                    <div class="text-[9px] text-slate-400 font-mono">ID: VA-001 &bull; Match: 96.2%</div>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">On-Time</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Control Bar -->
+                    <div class="mt-3 pt-2 flex items-center justify-between text-xs text-slate-400">
+                        <span>FPS: <strong class="text-white font-mono">60</strong></span>
+                        <span>Embedding: <strong class="text-cyan-400 font-mono">128-D L2</strong></span>
+                        <a href="/kiosk" class="text-cyan-400 font-semibold hover:underline flex items-center gap-1">Open Full Kiosk &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Numerical Highlights -->
+    <section class="border-y border-slate-800/80 py-8 bg-slate-900/30">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+                <div class="text-3xl sm:text-4xl font-extrabold text-cyan-400 font-mono">99.8%</div>
+                <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Face Verification Accuracy</div>
+            </div>
+            <div>
+                <div class="text-3xl sm:text-4xl font-extrabold text-emerald-400 font-mono">&lt; 120ms</div>
+                <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Inference Latency</div>
+            </div>
+            <div>
+                <div class="text-3xl sm:text-4xl font-extrabold text-purple-400 font-mono">3-Layer</div>
+                <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Presentation Spoof Defense</div>
+            </div>
+            <div>
+                <div class="text-3xl sm:text-4xl font-extrabold text-blue-400 font-mono">100%</div>
+                <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Contactless &amp; Autonomous</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Technology Architecture Showcase -->
+    <section class="space-y-8">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Engineering Architecture</span>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">How VisionAttend AI Works</h2>
+            <p class="text-xs sm:text-sm text-slate-400">A multi-stage mathematical computer vision pipeline designed for edge reliability.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Step 1 -->
+            <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold font-mono">01</div>
+                <h3 class="text-sm font-bold text-white">Detection &amp; Alignment</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    YuNet deep convolutional detector identifies facial bounds and extracts 5 ocular/oral landmarks to perform affine transformation into canonical pose.
+                </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold font-mono">02</div>
+                <h3 class="text-sm font-bold text-white">Anti-Spoof Defense</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Filters photo prints with Laplacian edge variance and screens LCD/OLED mobile screens using 2D FFT frequency spectrum moiré analysis.
+                </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold font-mono">03</div>
+                <h3 class="text-sm font-bold text-white">Hypersphere Matching</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Transforms aligned crops into 128-dimensional unit feature vectors. Performs rapid Cosine similarity matching against an in-RAM gallery cache.
+                </p>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="p-5 rounded-2xl glass-card border-slate-800 glass-card-hover space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold font-mono">04</div>
+                <h3 class="text-sm font-bold text-white">Shift State Machine</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Automatically computes On-Time vs Late punctuality, prevents duplicate records with a 5-minute cooldown guard, and manages check-out.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comprehensive Feature Grid -->
+    <section class="space-y-8">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Feature Matrix</span>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Enterprise Capabilities Out of the Box</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Feature 1 -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-3">
+                <div class="p-3 rounded-xl bg-cyan-950/80 border border-cyan-800/60 text-cyan-400 w-fit">
+                    <i data-lucide="video" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Autonomous Web Kiosk</h3>
+                <p class="text-xs text-slate-400">
+                    Runs on any tablet or browser via HTML5 getUserMedia with audio chimes, scan reticle, and real-time today's check-in feed.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-3">
+                <div class="p-3 rounded-xl bg-emerald-950/80 border border-emerald-800/60 text-emerald-400 w-fit">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Executive Analytics</h3>
+                <p class="text-xs text-slate-400">
+                    Interactive Chart.js visualizations showing arrival velocity curves, late trends, and department distribution charts.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-3">
+                <div class="p-3 rounded-xl bg-purple-950/80 border border-purple-800/60 text-purple-400 w-fit">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Live Face Enrollment</h3>
+                <p class="text-xs text-slate-400">
+                    Register employee faces with 1-click via webcam or photo upload. Automatically generates avatars and vector embeddings.
+                </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-3">
+                <div class="p-3 rounded-xl bg-blue-950/80 border border-blue-800/60 text-blue-400 w-fit">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Automated Reports &amp; Exports</h3>
+                <p class="text-xs text-slate-400">
+                    Download filtered attendance logs anytime in raw CSV or stylized, corporate-formatted Microsoft Excel (.xlsx) files.
+                </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-3">
+                <div class="p-3 rounded-xl bg-amber-950/80 border border-amber-800/60 text-amber-400 w-fit">
+                    <i data-lucide="sliders" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Configurable Shift Rules</h3>
+                <p class="text-xs text-slate-400">
+                    Customize office start times, late grace periods, and re-scan cooldown intervals directly from the Settings console.
+                </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-3">
+                <div class="p-3 rounded-xl bg-rose-950/80 border border-rose-800/60 text-rose-400 w-fit">
+                    <i data-lucide="monitor" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Standalone Desktop Kiosk</h3>
+                <p class="text-xs text-slate-400">
+                    High-speed native OpenCV desktop application (`desktop_kiosk.py`) with hardware video capture and audio feedback.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Navigation Launchpad CTA -->
+    <section class="p-8 sm:p-12 rounded-3xl glass-card border border-cyan-500/30 text-center relative overflow-hidden bg-gradient-to-b from-slate-900 to-cyber-900">
+        <div class="max-w-2xl mx-auto space-y-4 relative z-10">
+            <h2 class="text-3xl font-extrabold text-white tracking-tight">Ready to Experience VisionAttend AI?</h2>
+            <p class="text-sm text-slate-300">
+                Launch the autonomous camera kiosk, view real-time punctuality analytics, or configure enterprise rules.
+            </p>
+            <div class="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <a href="/kiosk" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-500/30 transition">Open Live Kiosk</a>
+                <a href="/dashboard" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white border border-slate-700 transition">Analytics Dashboard</a>
+                <a href="/settings" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition">Shift Settings</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

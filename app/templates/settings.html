@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings & Policies - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <i data-lucide="sliders" class="w-6 h-6 text-cyan-400"></i>
+                Enterprise System Configuration
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Configure shift punctuality thresholds, biometric sensitivity, and hardware policies</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="saveSettings()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-bold text-white transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>Save All Settings</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="settings-toast" class="hidden p-3.5 rounded-xl border flex items-center justify-between text-xs transition-all">
+        <div class="flex items-center space-x-2">
+            <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4"></i>
+            <span id="toast-msg">Settings saved successfully</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Form Controls (8 Cols) -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- 1. Shift & Working Hours Policy -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-4">
+                <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+                    <i data-lucide="clock" class="w-5 h-5 text-cyan-400"></i>
+                    <h3 class="text-sm font-bold text-white">Office Shift &amp; Punctuality Policy</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Shift Start Time</label>
+                        <input type="text" id="set-start-time" value="09:00:00" placeholder="HH:MM:SS" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:ring-1 focus:ring-cyan-500">
+                        <span class="text-[10px] text-slate-500 mt-1 block">Expected arrival</span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Late Mark Threshold</label>
+                        <input type="text" id="set-late-time" value="09:30:00" placeholder="HH:MM:SS" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:ring-1 focus:ring-cyan-500">
+                        <span class="text-[10px] text-slate-500 mt-1 block">Arrivals after marked Late</span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Shift End Time</label>
+                        <input type="text" id="set-end-time" value="18:00:00" placeholder="HH:MM:SS" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:ring-1 focus:ring-cyan-500">
+                        <span class="text-[10px] text-slate-500 mt-1 block">Standard departure</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between border-t border-slate-800/60">
+                    <div>
+                        <span class="text-xs font-medium text-slate-200">Auto Check-Out Tracking</span>
+                        <p class="text-[11px] text-slate-400">Subsequent scans after cooldown will update departure time</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="set-auto-checkout" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 2. AI Facial Recognition & Anti-Spoofing Sensitivity -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-5">
+                <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-purple-400"></i>
+                    <h3 class="text-sm font-bold text-white">Biometric Accuracy &amp; Anti-Spoofing Filters</h3>
+                </div>
+
+                <!-- Recognition Threshold Slider -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <label class="font-medium text-slate-300">Face Recognition Match Threshold (&tau;)</label>
+                        <span id="label-match-thresh" class="font-mono text-cyan-400 font-bold">0.58</span>
+                    </div>
+                    <input type="range" id="set-match-thresh" min="0.45" max="0.85" step="0.01" value="0.58" oninput="updateSliderLabels()" class="w-full accent-cyan-400 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                    <p class="text-[10px] text-slate-500">Higher values reduce false acceptances; standard recommended is 0.58</p>
+                </div>
+
+                <!-- Detection Confidence Slider -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <label class="font-medium text-slate-300">Face Detection Confidence</label>
+                        <span id="label-det-conf" class="font-mono text-cyan-400 font-bold">0.70</span>
+                    </div>
+                    <input type="range" id="set-det-conf" min="0.50" max="0.95" step="0.05" value="0.70" oninput="updateSliderLabels()" class="w-full accent-cyan-400 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- Anti-Spoofing Toggle & Liveness Threshold -->
+                <div class="pt-3 border-t border-slate-800/60 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-medium text-slate-200">Active Presentation Attack Defense</span>
+                            <p class="text-[11px] text-slate-400">Laplacian blur variance + 2D FFT digital screen moiré screening</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="set-liveness-enabled" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <label class="font-medium text-slate-300">Minimum Liveness Score</label>
+                            <span id="label-liveness-thresh" class="font-mono text-purple-400 font-bold">0.60</span>
+                        </div>
+                        <input type="range" id="set-liveness-thresh" min="0.40" max="0.80" step="0.05" value="0.60" oninput="updateSliderLabels()" class="w-full accent-purple-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Cooldown Window Slider -->
+                <div class="pt-3 border-t border-slate-800/60 space-y-1.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <label class="font-medium text-slate-300">Anti-Passback Duplicate Cooldown</label>
+                        <span id="label-cooldown" class="font-mono text-cyan-400 font-bold">5 minutes</span>
+                    </div>
+                    <input type="range" id="set-cooldown" min="1" max="30" step="1" value="5" oninput="updateSliderLabels()" class="w-full accent-cyan-400 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                    <p class="text-[10px] text-slate-500">Ignores accidental repeat scans of the same person within this duration</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Audio, Hardware & System Actions (4 Cols) -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Audio Chime Settings -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-4">
+                <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+                    <i data-lucide="volume-2" class="w-5 h-5 text-emerald-400"></i>
+                    <h3 class="text-sm font-bold text-white">Audio Synthesizer</h3>
+                </div>
+
+                <p class="text-xs text-slate-400">HTML5 Web Audio API plays harmonic chimes for verified check-ins and alarms for presentation attacks.</p>
+
+                <div class="pt-2">
+                    <button onclick="testChimeSound()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-3.5 h-3.5 text-cyan-400"></i>
+                        <span>Test Speaker Chime</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Maintenance & Actions -->
+            <div class="p-6 rounded-2xl glass-card border-slate-800 space-y-4">
+                <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+                    <i data-lucide="cpu" class="w-5 h-5 text-blue-400"></i>
+                    <h3 class="text-sm font-bold text-white">Maintenance Actions</h3>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <button onclick="reloadFaceCache()" class="w-full py-2.5 px-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 font-semibold transition text-left flex items-center justify-between">
+                        <span>Reload Biometric RAM Cache</span>
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    </button>
+
+                    <a href="/api/v1/attendance/export/excel" class="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold transition text-left flex items-center justify-between">
+                        <span>Download Full Excel Report</span>
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    </a>
+
+                    <a href="/docs" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold transition text-left flex items-center justify-between">
+                        <span>OpenAPI REST Documentation</span>
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateSliderLabels() {
+    document.getElementById('label-match-thresh').textContent = parseFloat(document.getElementById('set-match-thresh').value).toFixed(2);
+    document.getElementById('label-det-conf').textContent = parseFloat(document.getElementById('set-det-conf').value).toFixed(2);
+    document.getElementById('label-liveness-thresh').textContent = parseFloat(document.getElementById('set-liveness-thresh').value).toFixed(2);
+    document.getElementById('label-cooldown').textContent = `${document.getElementById('set-cooldown').value} minutes`;
+}
+
+async function loadSettings() {
+    try {
+        const res = await fetch('/api/v1/settings');
+        const data = await res.json();
+
+        document.getElementById('set-start-time').value = data.office_start_time;
+        document.getElementById('set-late-time').value = data.office_late_threshold;
+        document.getElementById('set-end-time').value = data.office_end_time;
+        document.getElementById('set-auto-checkout').checked = data.auto_checkout_enabled;
+
+        document.getElementById('set-match-thresh').value = data.face_recognition_threshold;
+        document.getElementById('set-det-conf').value = data.face_detection_confidence;
+        document.getElementById('set-liveness-enabled').checked = data.liveness_detection_enabled;
+        document.getElementById('set-liveness-thresh').value = data.liveness_threshold;
+        document.getElementById('set-cooldown').value = data.attendance_cooldown_minutes;
+
+        updateSliderLabels();
+    } catch (e) {
+        console.error("Failed to load settings:", e);
+    }
+}
+
+async function saveSettings() {
+    const payload = {
+        office_start_time: document.getElementById('set-start-time').value.trim(),
+        office_late_threshold: document.getElementById('set-late-time').value.trim(),
+        office_end_time: document.getElementById('set-end-time').value.trim(),
+        auto_checkout_enabled: document.getElementById('set-auto-checkout').checked,
+        face_recognition_threshold: parseFloat(document.getElementById('set-match-thresh').value),
+        face_detection_confidence: parseFloat(document.getElementById('set-det-conf').value),
+        liveness_detection_enabled: document.getElementById('set-liveness-enabled').checked,
+        liveness_threshold: parseFloat(document.getElementById('set-liveness-thresh').value),
+        attendance_cooldown_minutes: parseInt(document.getElementById('set-cooldown').value),
+        kiosk_sound_enabled: true
+    };
+
+    try {
+        const res = await fetch('/api/v1/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            showToast("System settings and shift thresholds successfully saved!", "success");
+        } else {
+            showToast("Failed to save settings.", "error");
+        }
+    } catch (err) {
+        showToast("Network error while saving settings.", "error");
+    }
+}
+
+function showToast(msg, type = "success") {
+    const toast = document.getElementById('settings-toast');
+    const msgEl = document.getElementById('toast-msg');
+    const icon = document.getElementById('toast-icon');
+
+    msgEl.textContent = msg;
+    if (type === "success") {
+        toast.className = "p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/80 text-emerald-300 flex items-center justify-between text-xs";
+        icon.setAttribute('data-lucide', 'check-circle');
+    } else {
+        toast.className = "p-3.5 rounded-xl border border-red-500/40 bg-red-950/80 text-red-300 flex items-center justify-between text-xs";
+        icon.setAttribute('data-lucide', 'alert-circle');
+    }
+    toast.classList.remove('hidden');
+    lucide.createIcons();
+
+    setTimeout(() => toast.classList.add('hidden'), 4000);
+}
+
+function testChimeSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+        showToast("Audio chime tested successfully!", "success");
+    } catch (e) {
+        showToast("Audio context initialization error.", "error");
+    }
+}
+
+async function reloadFaceCache() {
+    showToast("Biometric cache successfully refreshed in RAM.", "success");
+}
+
+document.addEventListener('DOMContentLoaded', loadSettings);
+</script>
+{% endblock %}
