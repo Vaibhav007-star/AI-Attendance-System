@@ -76,6 +76,10 @@
                     <i data-lucide="sliders" class="w-4 h-4"></i>
                     <span>Settings</span>
                 </a>
+                <a href="/admin" class="nav-link px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition text-slate-300 hover:text-cyan-400 hover:bg-slate-800/60">
+                    <i data-lucide="shield" class="w-4 h-4 text-cyan-400"></i>
+                    <span>Admin</span>
+                </a>
             </nav>
 
             <!-- Status Indicator & Action -->
@@ -84,7 +88,7 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>AI Engine Online</span>
                 </div>
-                <a href="/login" class="px-3.5 py-2 rounded-lg text-xs font-semibold border border-slate-700 hover:border-cyan-500/50 bg-slate-800/50 hover:bg-slate-800 transition text-slate-200 hover:text-white flex items-center space-x-1.5">
+                <a id="nav-auth-btn" href="/admin" class="px-3.5 py-2 rounded-lg text-xs font-semibold border border-slate-700 hover:border-cyan-500/50 bg-slate-800/50 hover:bg-slate-800 transition text-slate-200 hover:text-white flex items-center space-x-1.5">
                     <i data-lucide="shield" class="w-3.5 h-3.5 text-cyan-400"></i>
                     <span id="nav-auth-label">Admin Portal</span>
                 </a>
@@ -134,6 +138,20 @@
             const m = document.getElementById('mobile-menu');
             m.classList.toggle('hidden');
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawProfile = localStorage.getItem('user_profile');
+            const authBtn = document.getElementById('nav-auth-btn');
+            const authLabel = document.getElementById('nav-auth-label');
+            if (rawProfile && authBtn && authLabel) {
+                try {
+                    const user = JSON.parse(rawProfile);
+                    authBtn.href = '/admin';
+                    authLabel.textContent = user.full_name ? user.full_name.split(' ')[0] : 'Admin Center';
+                    authBtn.className = "px-3.5 py-2 rounded-lg text-xs font-semibold border border-cyan-500/40 bg-cyan-950/70 hover:bg-cyan-900/80 transition text-cyan-300 hover:text-white flex items-center space-x-1.5 shadow-sm shadow-cyan-500/20";
+                } catch (e) {}
+            }
+        });
     </script>
     {% block scripts %}{% endblock %}
 </body>

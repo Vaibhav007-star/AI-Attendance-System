@@ -264,8 +264,8 @@ async function refreshRecentFeed() {
         listEl.innerHTML = stats.recent_logs.map(log => `
             <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:border-cyan-500/30 transition flex items-center justify-between">
                 <div class="flex items-center space-x-3 min-w-0">
-                    <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-slate-700 to-slate-800 border border-slate-600 flex items-center justify-center font-bold text-xs text-cyan-300">
-                        ${log.full_name ? log.full_name.slice(0, 2).toUpperCase() : 'VA'}
+                    <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-xs text-cyan-300">
+                        ${log.avatar_path ? `<img src="${log.avatar_path}" class="w-full h-full object-cover">` : (log.full_name ? log.full_name.slice(0, 2).toUpperCase() : 'VA')}
                     </div>
                     <div class="min-w-0">
                         <div class="text-xs font-semibold text-white truncate">${log.full_name}</div>

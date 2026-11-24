@@ -49,6 +49,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
             "employee_id": log.user.employee_id if log.user else "N/A",
             "full_name": log.user.full_name if log.user else "Unknown",
             "department": log.user.department.name if log.user and log.user.department else "General",
+            "avatar_path": log.user.avatar_path if log.user else None,
             "check_in": log.check_in.strftime("%H:%M:%S") if log.check_in else "-",
             "check_out": log.check_out.strftime("%H:%M:%S") if log.check_out else "-",
             "status": log.status,

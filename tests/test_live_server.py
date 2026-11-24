@@ -26,6 +26,7 @@ def run():
         ("/employees", "Staff Directory & Face AI Enrollment Screen"),
         ("/records", "Attendance Records & Audit Screen"),
         ("/settings", "System Policy & Shift Settings Screen"),
+        ("/admin", "Executive Admin Management Portal"),
         ("/login", "Admin Portal Sign-In Screen"),
         ("/docs", "FastAPI Swagger API Documentation")
     ]

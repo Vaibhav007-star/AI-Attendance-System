@@ -92,13 +92,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount Static Files
-static_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-
+# Mount Face Storage first so /static/faces resolves to storage/faces
 faces_dir = settings.FACES_DIR
 faces_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static/faces", StaticFiles(directory=str(faces_dir)), name="face_storage")
+
+# Mount General Static Files (CSS, JS)
+static_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # Include API v1 routes
 app.include_router(api_v1_router)
@@ -127,6 +128,10 @@ def records_page(request: Request):
 @app.get("/settings", response_class=HTMLResponse)
 def settings_page(request: Request):
     return templates.TemplateResponse(request=request, name="settings.html", context={"app_name": settings.APP_NAME})
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_page(request: Request):
+    return templates.TemplateResponse(request=request, name="admin.html", context={"app_name": settings.APP_NAME})
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):

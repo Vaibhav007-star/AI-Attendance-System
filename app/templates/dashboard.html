@@ -236,9 +236,9 @@ async function loadDashboardData() {
 
         tbody.innerHTML = data.recent_logs.map(log => `
             <tr class="hover:bg-slate-800/40 transition">
-                <td class="py-3 px-4 font-semibold text-white flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-[10px] text-cyan-400">
-                        ${log.full_name ? log.full_name.slice(0, 2).toUpperCase() : 'VA'}
+                <td class="py-3 px-4 font-semibold text-white flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        ${log.avatar_path ? `<img src="${log.avatar_path}" class="w-full h-full object-cover">` : `<span class="font-bold text-[10px] text-cyan-400">${log.full_name ? log.full_name.slice(0, 2).toUpperCase() : 'VA'}</span>`}
                     </div>
                     <div>
                         <div>${log.full_name}</div>

@@ -104,9 +104,14 @@ async function fetchRecords() {
         tbody.innerHTML = logs.map(log => `
             <tr class="hover:bg-slate-800/40 transition">
                 <td class="py-3 px-4 font-mono text-slate-400">#${log.id}</td>
-                <td class="py-3 px-4 font-semibold text-white">
-                    <div>${log.user ? log.user.full_name : 'Unknown'}</div>
-                    <div class="text-[10px] text-slate-400 font-mono font-normal">${log.user ? log.user.employee_id : '--'}</div>
+                <td class="py-3 px-4 font-semibold text-white flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        ${log.user && log.user.avatar_path ? `<img src="${log.user.avatar_path}" class="w-full h-full object-cover">` : `<span class="font-bold text-[10px] text-cyan-400">VA</span>`}
+                    </div>
+                    <div>
+                        <div>${log.user ? log.user.full_name : 'Unknown'}</div>
+                        <div class="text-[10px] text-slate-400 font-mono font-normal">${log.user ? log.user.employee_id : '--'}</div>
+                    </div>
                 </td>
                 <td class="py-3 px-4 text-slate-300">${log.user && log.user.department ? log.user.department.name : 'General'}</td>
                 <td class="py-3 px-4 font-mono text-slate-300">${log.log_date}</td>
